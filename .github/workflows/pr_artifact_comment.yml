@@ -19,3 +19,5 @@ jobs:
           prefix: "Firmware for this pull request:"
           format: "[Firmware.zip]({url})"
           addTo: pull
+      - name: Set the artifact URL
+        run: echo "artifact_url=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
