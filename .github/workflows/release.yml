@@ -46,21 +46,24 @@ jobs:
       - name: Set version environment variable
         run: echo "VERSION=${{ steps.get_version.outputs.version-without-v }}" >> $GITHUB_ENV
 
-      - name: Run PlatformIO
+      - name: Run PlatformIO for ${{ matrix.environment }}
         env:
           VERSION: ${{ env.VERSION }}
-        run: pio run
+        run: pio run -e ${{ matrix.environment }}  # 각 환경에 맞는 빌드 실행
 
 
-      - name: Archive production artifacts
+      - name: Archive production artifacts for ${{ matrix.environment }}
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
-          path: .pio/build/**/*.bin
+          name: firmware-${{ matrix.environment }}
+          path: .pio/build/${{ matrix.environment }}/firmware*.bin
+          #path: .pio/build/**/*.bin
+          
 
-      - name: Release
+      - name: Release for ${{ matrix.environment }}
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: .pio/build/**/firmware*.bin
+          files: .pio/build/${{ matrix.environment }}/firmware*.bin
+          #files: .pio/build/**/firmware*.bin
