@@ -9,15 +9,23 @@ jobs:
     name: Add artifact links to pull request
     runs-on: windows-2019
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        environments:
+          - "esp32doit"
+          - "esp32S3_n4r2"
+    
     steps:
       - name: workflow artifact pull request comment
         uses: tonyhallett/artifacts-url-comments@v1.1.0    
-      #- uses: tonyhallett/artifacts-url-comments@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          prefix: "Firmware for this pull request:"
-          format: "[Firmware.zip]({url})"
+          prefix: "Firmware for this pull request (${matrix.environments}):"
+          format: "[Firmware_${{ matrix.environments }}.zip]({url})"
           addTo: pull
+
       - name: Set the artifact URL
         run: echo "artifact_url=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
