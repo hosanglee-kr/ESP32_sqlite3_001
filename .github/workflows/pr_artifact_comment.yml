@@ -42,11 +42,15 @@ jobs:
           $links -join "" | Set-Content -Path links.txt
           echo "links=$(Get-Content links.txt -Raw)" >> $GITHUB_ENV
           
-      - name: Debug links
+      - name: Debug links content
         shell: pwsh
         run: |
-          Write-Host "Links content: $($env:links)"
+          $linksContent = Get-Content links.txt -Raw
+          Write-Host "Links content: $linksContent"
         
+      - name: Check links variable
+        run: echo "links: ${{ env.links }}"
+
       - name: Comment on pull request
         uses: peter-evans/create-or-update-comment@v2
         env:
