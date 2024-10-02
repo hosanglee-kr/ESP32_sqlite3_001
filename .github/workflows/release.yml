@@ -37,7 +37,7 @@ jobs:
     
       - name: Extract build version
         id: get_version
-        uses: battila7/get-version-action@v2
+        uses: battila7/get-version-action@v2.2.1
 
       - name: Set version environment variable
         run: echo "VERSION=${{ steps.get_version.outputs.version-without-v }}" >> $GITHUB_ENV
