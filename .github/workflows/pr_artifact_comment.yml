@@ -24,12 +24,16 @@ jobs:
 
       - name: Generate firmware links
         id: generate-links
+        shell: pwsh
         run: |
-          echo "Firmware links for this pull request:" > links.txt
-          for env in ${GITHUB_ENV}; do
-            echo "Firmware_${env}.zip: ${!artifact_url_$env}" >> links.txt
-          done
-          echo "links=$(cat links.txt)" >> $GITHUB_ENV
+          $links = @()
+          $links += "Firmware links for this pull request:`n"
+          foreach ($env in @("${{ matrix.environments }}")) {
+            $artifactUrl = Get-ChildItem Env:artifact_url_$env
+            $links += "Firmware_${env}.zip: $artifactUrl`n"
+          }
+          $links -join "" | Set-Content -Path links.txt
+          echo "links=$(Get-Content links.txt -Raw)" >> $GITHUB_ENV
       
       - name: Comment on pull request
         uses: peter-evans/create-or-update-comment@v2
