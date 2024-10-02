@@ -22,6 +22,11 @@
 #endif
 
 
+#define		E50_SQL_WEB
+
+#ifdef E50_SQL_WEB
+	#include "E50_sqlite3_webquery_001.h"
+#endif
 
 #define		F10_SQLLITE_LOGGER
 
@@ -47,6 +52,9 @@ void setup() {
 		E40_init();
 	#endif
 
+	#ifdef E50_SQL_WEB
+		E50_init();
+	#endif
 
 	#ifdef F10_SQLLITE_LOGGER
 		F10_init();
@@ -64,6 +72,10 @@ void loop() {
 
 	#ifdef E40_SQL_BULK_INSERT
 		E40_run();
+	#endif
+	
+	#ifdef E50_SQL_WEB
+		E50_run();
 	#endif
 
 	#ifdef F10_SQLLITE_LOGGER
