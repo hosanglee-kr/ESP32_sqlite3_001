@@ -61,14 +61,4 @@ jobs:
           name: ${{ matrix.environments }}-partitions.bin
           path: .pio/build/${{ matrix.environments }}/partitions.bin
 
-      - name: Comment firmware links to PR
-        uses: tonyhallett/artifacts-url-comments@v1.1.0    
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          prefix: "Firmware for this pull request:"
-          format: |
-            - [${{ matrix.environments }}-firmware.bin]({{url}})
-            - [${{ matrix.environments }}-partitions.bin]({{url}})
-          addTo: pull
  
