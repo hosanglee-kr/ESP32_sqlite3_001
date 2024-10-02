@@ -20,7 +20,10 @@ jobs:
     steps:
       - name: Set artifact URL
         id: artifact-url
-        run: echo "artifact_url_${{ matrix.environments }}=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
+        run: |
+          foreach ($env in @("${{ matrix.environments }}")) {
+            echo "artifact_url_$env=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
+          }
 
       - name: Generate firmware links
         id: generate-links
@@ -30,7 +33,11 @@ jobs:
           $links += "Firmware links for this pull request:`n"
           foreach ($env in @("${{ matrix.environments }}")) {
             $artifactUrl = [System.Environment]::GetEnvironmentVariable("artifact_url_$env")
-            $links += "Firmware_${env}.zip: $artifactUrl`n"
+            if ($artifactUrl) {
+              $links += "Firmware_${env}.zip: $artifactUrl`n"
+            } else {
+              $links += "Firmware_${env}.zip: Not found`n"
+            }
           }
           $links -join "" | Set-Content -Path links.txt
           echo "links=$(Get-Content links.txt -Raw)" >> $GITHUB_ENV
