@@ -29,7 +29,7 @@ jobs:
           $links = @()
           $links += "Firmware links for this pull request:`n"
           foreach ($env in @("${{ matrix.environments }}")) {
-            $artifactUrl = Get-ChildItem Env:artifact_url_$env
+            $artifactUrl = [System.Environment]::GetEnvironmentVariable("artifact_url_$env")
             $links += "Firmware_${env}.zip: $artifactUrl`n"
           }
           $links -join "" | Set-Content -Path links.txt
