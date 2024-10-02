@@ -18,14 +18,23 @@ jobs:
           - "esp32S3_n4r2"
     
     steps:
-      - name: workflow artifact pull request comment
-        uses: tonyhallett/artifacts-url-comments@v1.1.0    
+      - name: Set artifact URL
+        id: artifact-url
+        run: echo "artifact_url_${{ matrix.environments }}=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
+
+      - name: Generate firmware links
+        id: generate-links
+        run: |
+          echo "Firmware links for this pull request:" > links.txt
+          for env in ${GITHUB_ENV}; do
+            echo "Firmware_${env}.zip: ${!artifact_url_$env}" >> links.txt
+          done
+          echo "links=$(cat links.txt)" >> $GITHUB_ENV
+      
+      - name: Comment on pull request
+        uses: peter-evans/create-or-update-comment@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          prefix: "Firmware for this pull request (${matrix.environments}):"
-          format: "[Firmware_${{ matrix.environments }}.zip]({url})"
-          addTo: pull
-
-      - name: Set the artifact URL
-        run: echo "artifact_url=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ env.links }}
