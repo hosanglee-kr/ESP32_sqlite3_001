@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environments:
+        environment:
           - "esp32doit"
           - "esp32S3_n4r2"
 
