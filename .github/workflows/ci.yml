@@ -58,4 +58,4 @@ jobs:
         with:
           name: ${{ matrix.environments }}-partitions.bin
           path: .pio/build/${{ matrix.environments }}/partitions.bin
-
+          
