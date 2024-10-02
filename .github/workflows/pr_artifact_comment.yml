@@ -9,53 +9,15 @@ jobs:
     name: Add artifact links to pull request
     runs-on: windows-2019
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        environments:
-          - "esp32doit"
-          - "esp32S3_n4r2"
-    
     steps:
-      - name: Set artifact URL
-        id: artifact-url
-        run: |
-          foreach ($env in @("${{ matrix.environments }}")) {
-            echo "artifact_url_$env=${{ steps.artifact-upload.outputs.url }}" >> $GITHUB_ENV
-          }
-
-      - name: Generate firmware links
-        id: generate-links
-        shell: pwsh
-        run: |
-          $links = @()
-          $links += "Firmware links for this pull request:`n"
-          foreach ($env in @("${{ matrix.environments }}")) {
-            $artifactUrl = [System.Environment]::GetEnvironmentVariable("artifact_url_$env")
-            if ($artifactUrl) {
-              $links += "Firmware_${env}.zip: $artifactUrl`n"
-            } else {
-              $links += "Firmware_${env}.zip: Not found`n"
-            }
-          }
-          $links -join "" | Set-Content -Path links.txt
-          echo "links=$(Get-Content links.txt -Raw)" >> $GITHUB_ENV
-          
-      - name: Debug links content
-        shell: pwsh
-        run: |
-          $linksContent = Get-Content links.txt -Raw
-          Write-Host "Links content: $linksContent"
-        
-      - name: Check links variable
-        run: echo "links: ${{ env.links }}"
-
-      - name: Comment on pull request
-        uses: peter-evans/create-or-update-comment@v2
+      - name: workflow artifact pull request comment
+        uses: tonyhallett/artifacts-url-comments@v1.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          issue-number: ${{ github.event.workflow_run.pull_requests[0].number }}  # Pull request 번호 가져오기
-          body: ${{ env.links }}  # 댓글 본문 설정
+          prefix: "Firmware for this pull request:"
+          format: |
+            - [${{ matrix.environments }}-firmware.bin]({{url}})
+            - [${{ matrix.environments }}-partitions.bin]({{url}})
+          addTo: pull
  
