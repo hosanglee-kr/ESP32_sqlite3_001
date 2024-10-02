@@ -34,6 +34,7 @@ jobs:
           }
           $links -join "" | Set-Content -Path links.txt
           echo "links=$(Get-Content links.txt -Raw)" >> $GITHUB_ENV
+          
       - name: Debug links
         run: echo "Links content: ${{ env.links }}"
         
