@@ -72,5 +72,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: .pio/build/${{ matrix.environment }}/firmware*.bin
-          #files: .pio/build/**/firmware*.bin
+          files: .pio/build/${{ matrix.environment }}/firmware*.bin  # 각 환경의 firmware.bin 추가
+          tag_name: ${{ github.ref_name }}  # release에 맞는 tag 설정
+          name: Firmware Release ${{ matrix.environment }}  # 각 환경에 맞는 이름 설정
+          body: "Firmware for ${{ matrix.environment }} environment"
+          draft: false
+          prerelease: false
+          
+        #with:
+        #  files: .pio/build/${{ matrix.environment }}/firmware*.bin
+        #  #files: .pio/build/**/firmware*.bin
