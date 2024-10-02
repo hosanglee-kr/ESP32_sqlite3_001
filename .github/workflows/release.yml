@@ -38,7 +38,11 @@ jobs:
       - name: Extract build version
         id: get_version
         uses: battila7/get-version-action@v2.2.1
-
+        with:
+          # 이 작업에서 환경 변수로 버전을 반환할 수 있도록 수정 필요
+          # (작업의 입력값이 필요할 수 있으니 확인)
+          node-version: '20' # Node.js 버전 설정
+          
       - name: Set version environment variable
         run: echo "VERSION=${{ steps.get_version.outputs.version-without-v }}" >> $GITHUB_ENV
 
