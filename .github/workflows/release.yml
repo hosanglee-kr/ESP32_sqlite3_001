@@ -6,6 +6,13 @@ on:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        environments:
+          - "esp32doit"
+          - "esp32S3_n4r2"
+
     runs-on: ubuntu-latest
 
     steps:
