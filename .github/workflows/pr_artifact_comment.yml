@@ -1,23 +1,37 @@
 name: Add firmware links to pull request
+
 on:
   workflow_run:
     workflows: [Firmware pull request validation]
     types: [completed]
 
 jobs:
-  artifacts-url-comments:
-    name: Add artifact links to pull request
-    runs-on: windows-2019
+  add-artifact-links:
+    runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     steps:
-      - name: workflow artifact pull request comment
-        uses: tonyhallett/artifacts-url-comments@v1.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get artifacts URLs
+        run: |
+          echo "firmware_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "firmware").archive_download_url')" >> $GITHUB_ENV
+          echo "partitions_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "partitions").archive_download_url')" >> $GITHUB_ENV
+          echo "bootloader_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "bootloader").archive_download_url')" >> $GITHUB_ENV
+
+      - name: Add comment to Pull Request
+        uses: actions/github-script@v6
         with:
-          prefix: "Firmware for this pull request:"
-          format: |
-            - [${{ matrix.environments }}-firmware.bin]({{url}})
-            - [${{ matrix.environments }}-partitions.bin]({{url}})
-          addTo: pull
- 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue_number = context.payload.workflow_run.pull_requests[0].number;
+            const body = `
+              Firmware for this pull request:
+              - [Firmware](${{ env.firmware_url }})
+              - [Partitions](${{ env.partitions_url }})
+              - [Bootloader](${{ env.bootloader_url }})
+            `;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: body
+            });
