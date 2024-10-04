@@ -49,7 +49,7 @@ jobs:
           echo "Renaming bin files with the environment name"
           find .pio/build/*/*.bin -print -exec rename 's:/:-:g' {} \;
           rename 's/.pio-build-//' ./*.bin
-          ls -l
+          ls -la
         #  echo "Renaming bin files with the environment name"
         #  find .pio/build/*/*.bin -exec rename 's:/:-:g' {} \;
         #  ls -l
@@ -57,10 +57,10 @@ jobs:
       - name: Create toDeploy directory
         run: mkdir toDeploy
 
-      - name: Remove .pio-build- prefix from bin files
-        run: |
-          rename 's/.pio-build-//' ./*.bin
-          ls -l
+      #- name: Remove .pio-build- prefix from bin files
+      #  run: |
+      #    rename 's/.pio-build-//' ./*.bin
+      #    ls -l
 
       - name: Replace space with underscore in folder names
         run: |
