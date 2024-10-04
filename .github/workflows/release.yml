@@ -53,7 +53,9 @@ jobs:
         run: mkdir toDeploy
 
       - name: Remove .pio-build- prefix from bin files
-        run: rename 's/.pio-build-//' ./*.bin
+        run: |
+          rename 's/.pio-build-//' ./*.bin
+          ls -l
 
       - name: Replace space with underscore in folder names
         run: |
@@ -82,9 +84,10 @@ jobs:
 
       - name: Remove unnecessary binaries and zips
         run: |
+          ls -l
           echo "Removing unnecessary binaries and zips"
           rm -f *-all*.bin *-test*.bin *-test*.zip
-
+          ls -l
       - name: Zip source code
         run: |
           echo "Zipping source code"
