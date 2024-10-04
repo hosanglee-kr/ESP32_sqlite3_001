@@ -11,26 +11,25 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Get artifacts URLs
-        id: get-artifacts
-        env:   
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Initialize variables
         run: |
-          # 아티팩트 URL을 저장할 본문 변수 초기화
           body="Firmware for this pull request:\n"
-          
-          # 아티팩트 목록 가져오기
-          artifacts=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[].name')
-          
-          # 아티팩트 이름과 URL을 매칭하여 본문 생성
-          for artifact_name in $artifacts; do
-            url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq ".artifacts[] | select(.name == \"$artifact_name\").archive_download_url")
+          echo "body=$body" >> $GITHUB_ENV
+
+      - name: Get artifacts list
+        id: list-artifacts
+        run: |
+          artifacts=$(gh artifact list --run-id ${{ github.event.workflow_run.id }} --json name)
+          echo "artifacts=$artifacts" >> $GITHUB_ENV
+
+      - name: Generate artifact URLs and body content
+        run: |
+          for artifact_name in $(echo $artifacts | jq -r '.[] | .name'); do
+            url=$(gh artifact download $artifact_name --run-id ${{ github.event.workflow_run.id }} --json url --jq '.url')
             if [ ! -z "$url" ]; then
-              body+="- [$artifact_name]($url)\n"
+              body="${{ env.body }}- [$artifact_name]($url)\n"
             fi
           done
-          
-          # 생성된 본문을 환경 변수에 저장
           echo "body=$body" >> $GITHUB_ENV
 
       - name: Add comment to Pull Request
