@@ -24,61 +24,70 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-            python-version: '3.11'
+          python-version: '3.11'
 
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Extract build version
+      - name: Get Release Version
         id: get_version
-        uses: battila7/get-version-action@v2
+        run: |
+          VERSION=${GITHUB_REF##*/}  # Extract the tag name from GITHUB_REF
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
 
       - name: Run PlatformIO
         env:
-          VERSION: ${{ steps.get_version.outputs.version-without-v }}
+          VERSION: ${{ env.version }}  # Use the version from the environment variable
         run: pio run
 
-      - name: Prepare Release Assets
+      - name: Install rename
+        run: sudo apt-get update && sudo apt-get install -y rename  # rename 패키지 설치
+
+      - name: Rename bin files
         run: |
-          #!/bin/bash
-          set -e
           echo "Renaming bin files with the environment name"
-          rename -v 's:/:-:g' .pio/build/*/*.bin
-          mkdir toDeploy
-          rename 's/.pio-build-//' .*.bin
-          
-          (
-            cd lib
-            echo "Replacing space by _ in folder names"
-            find . -type d -name "* *" | while read FNAME; do mv "$FNAME" "${FNAME// /_}"; done
-            echo "Zipping libraries per board"
-            for i in */
-            do
-              zip -r "${i%/}-libraries.zip" "$i"
-            done
-            mv *.zip ../toDeploy
-          )
-          
-          # Remove binaries for *-all*, *-test* env and only zip containing *-test*
+          find .pio/build/*/*.bin -exec rename 's:/:-:g' {} \;
+
+      - name: Create toDeploy directory
+        run: mkdir toDeploy
+
+      - name: Remove .pio-build- prefix from bin files
+        run: rename 's/.pio-build-//' ./*.bin
+
+      - name: Replace space with underscore in folder names
+        run: |
+          echo "Replacing space by _ in folder names"
+          find lib -type d -name "* *" | while read FNAME; do mv "$FNAME" "${FNAME// /_}"; done
+
+      - name: Zip libraries per board
+        run: |
+          echo "Zipping libraries per board"
+          for dir in lib/*/; do
+            zip -r "${dir%/}-libraries.zip" "$dir"
+          done
+          mv lib/*.zip toDeploy
+
+      - name: Remove unnecessary binaries and zips
+        run: |
+          echo "Removing unnecessary binaries and zips"
           rm -f *-all*.bin *-test*.bin *-test*.zip
+
+      - name: Zip source code
+        run: |
           echo "Zipping source code"
           zip -r Sources.zip src
-          mv *.zip toDeploy
+          mv Sources.zip toDeploy
           mv *.bin toDeploy
-          
-          ls -lA toDeploy
+
+      - name: List toDeploy contents
+        run: ls -lA toDeploy
 
       - name: Upload Release Assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: release-assets
           path: toDeploy/**
-          
-      - name: Get upload url
-        id: release-id
-        run: |
-          RELEASE_ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
-          echo "::set-output name=upload_url::https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets{?name,label}"
           
       - name: Finalize Release
         uses: softprops/action-gh-release@v1
