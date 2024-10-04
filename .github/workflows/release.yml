@@ -67,11 +67,17 @@ jobs:
             for dir in lib/*/; do
               if [ -d "$dir" ]; then  # Check if the subdirectory exists
                 zip -r "${dir%/}-libraries.zip" "$dir"
+                echo "Created zip: ${dir%/}-libraries.zip"
               fi
             done
-            mv lib/*.zip toDeploy
+            # Ignore if no zip files were created, just move on
+            if compgen -G "lib/*.zip" > /dev/null; then
+              mv lib/*.zip toDeploy
+            else
+              echo "No zip files created in 'lib' directory."
+            fi
           else
-            echo "No 'lib' directory found."
+            echo "No 'lib' directory found, skipping zip creation."
           fi
 
       - name: Remove unnecessary binaries and zips
