@@ -11,35 +11,25 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Initialize variables
-        run: |
-          body="Firmware for this pull request:\n"
-          echo "body=$body" >> $GITHUB_ENV
-
-      - name: Get artifacts list
-        id: list-artifacts
-        run: |
-          artifacts=$(gh artifact list --run-id ${{ github.event.workflow_run.id }} --json name)
-          echo "artifacts=$artifacts" >> $GITHUB_ENV
-
-      - name: Generate artifact URLs and body content
-        run: |
-          for artifact_name in $(echo $artifacts | jq -r '.[] | .name'); do
-            url=$(gh artifact download $artifact_name --run-id ${{ github.event.workflow_run.id }} --json url --jq '.url')
-            if [ ! -z "$url" ]; then
-              body="${{ env.body }}- [$artifact_name]($url)\n"
-            fi
-          done
-          echo "body=$body" >> $GITHUB_ENV
-
-      - name: Add comment to Pull Request
+      - name: Get artifacts and generate comment
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const run_id = context.workflow_run.id;
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run_id
+            });
+
+            let body = "Firmware for this pull request:\n";
+            artifacts.data.artifacts.forEach(artifact => {
+              body += `- [${artifact.name}](${artifact.archive_download_url})\n`;
+            });
+
             const issue_number = context.payload.workflow_run.pull_requests[0].number;
-            const body = process.env.body; // 환경 변수에서 본문 가져오기
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
