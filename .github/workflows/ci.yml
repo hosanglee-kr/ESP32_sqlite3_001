@@ -54,6 +54,16 @@ jobs:
           name: ${{ matrix.environments }}-firmware.bin
           path: .pio/build/${{ matrix.environments }}/firmware*.bin
 
+      - name: Upload artifact littlefs
+        id: upload-littlefs
+        if: exists(.pio/build/${{ matrix.environments }}/littlefs.bin)  # 파일 존재 여부 확인
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.environments }}-littlefs.bin  # 아티팩트 이름
+          path: .pio/build/${{ matrix.environments }}/littlefs.bin  # LittleFS 바이너리 파일 경로
+          
+    
+          
       - name: upload artifact partitions
         id: upload-partitions
         uses: actions/upload-artifact@v4
