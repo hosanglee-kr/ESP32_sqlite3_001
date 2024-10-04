@@ -47,18 +47,23 @@ jobs:
           VERSION: "0.0.${{ github.event.number }}"
         run: pio run -e ${{ matrix.environments }}
 
-      - name: Archive firmware artifacts
+      - name: upload artifact firmware
         id: upload-firmware
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.environments }}-firmware.bin
           path: .pio/build/${{ matrix.environments }}/firmware*.bin
 
-      - name: Archive partitions artifacts
+      - name: upload artifact partitions
         id: upload-partitions
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.environments }}-partitions.bin
           path: .pio/build/${{ matrix.environments }}/partitions.bin
-
- 
+      - name: upload artifact bootlooder 
+        id: upload-bootloader
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.environments }}-bootloader.bin
+          path: .pio/build/${{ matrix.environments }}/bootloader.bin
+          
