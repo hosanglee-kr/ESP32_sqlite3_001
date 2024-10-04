@@ -47,6 +47,11 @@ jobs:
           VERSION: "0.0.${{ github.event.number }}"
         run: pio run -e ${{ matrix.environments }}
 
+      - name: Build filesystem image
+        env:
+          VERSION: "0.0.${{ github.event.number }}"
+        run: pio run -e ${{ matrix.environments }} --target buildfs  # LittleFS 파일 시스템 이미지 빌드
+
       - name: upload artifact firmware
         id: upload-firmware
         uses: actions/upload-artifact@v4
