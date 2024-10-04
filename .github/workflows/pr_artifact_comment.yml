@@ -28,10 +28,15 @@ jobs:
               body += `- [${artifact.name}](${artifact.archive_download_url})\n`;
             });
             
-            const issue_number = context.payload.workflow_run.pull_requests[0].number;
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue_number,
-              body: body
-            });
+            // PR이 연결되어 있는지 확인
+            if (context.payload.workflow_run.pull_requests.length > 0) {
+              const issue_number = context.payload.workflow_run.pull_requests[0].number;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+                body: body
+              });
+            } else {
+              console.log("No pull request associated with this workflow run.");
+            }
