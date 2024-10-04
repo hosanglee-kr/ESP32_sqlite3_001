@@ -45,6 +45,7 @@ jobs:
         env:
           VERSION: ${{ env.version }}  # Use the version from the environment variable
         run: pio run --target buildfs  # Add this line to build the filesystem
+        continue-on-error: true
 
       - name: Install rename
         run: sudo apt-get update && sudo apt-get install -y rename  # rename 패키지 설치
