@@ -63,10 +63,16 @@ jobs:
       - name: Zip libraries per board
         run: |
           echo "Zipping libraries per board"
-          for dir in lib/*/; do
-            zip -r "${dir%/}-libraries.zip" "$dir"
-          done
-          mv lib/*.zip toDeploy
+          if [ -d lib ]; then  # Check if the lib directory exists
+            for dir in lib/*/; do
+              if [ -d "$dir" ]; then  # Check if the subdirectory exists
+                zip -r "${dir%/}-libraries.zip" "$dir"
+              fi
+            done
+            mv lib/*.zip toDeploy
+          else
+            echo "No 'lib' directory found."
+          fi
 
       - name: Remove unnecessary binaries and zips
         run: |
@@ -84,7 +90,7 @@ jobs:
         run: ls -lA toDeploy
 
       - name: Upload Release Assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: release-assets
           path: toDeploy/**
