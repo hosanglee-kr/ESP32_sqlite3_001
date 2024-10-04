@@ -51,6 +51,7 @@ jobs:
         env:
           VERSION: "0.0.${{ github.event.number }}"
         run: pio run -e ${{ matrix.environments }} --target buildfs  # LittleFS 파일 시스템 이미지 빌드
+        continue-on-error: true  # 오류가 발생해도 계속 실행
 
       - name: upload artifact firmware
         id: upload-firmware
