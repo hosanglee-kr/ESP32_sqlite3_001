@@ -48,6 +48,7 @@ jobs:
         run: |
           echo "Renaming bin files with the environment name"
           find .pio/build/*/*.bin -print -exec rename 's:/:-:g' {} \;
+          rename 's/.pio-build-//' ./*.bin
           ls -l
         #  echo "Renaming bin files with the environment name"
         #  find .pio/build/*/*.bin -exec rename 's:/:-:g' {} \;
