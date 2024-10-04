@@ -13,14 +13,14 @@ jobs:
     steps:
       - name: Get artifacts URLs
         id: get-artifacts
-        env:   # GH_TOKEN 환경 변수를 추가합니다.
+        env:   
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # 아티팩트 URL을 저장할 본문 변수 초기화
           body="Firmware for this pull request:\n"
           
           # 아티팩트 목록 가져오기
-          artifacts=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | .name')
+          artifacts=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[].name')
           
           # 아티팩트 이름과 URL을 매칭하여 본문 생성
           for artifact_name in $artifacts; do
