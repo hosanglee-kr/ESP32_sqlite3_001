@@ -12,10 +12,24 @@ jobs:
 
     steps:
       - name: Get artifacts URLs
+        id: get-artifacts
         run: |
-          echo "firmware_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "firmware").archive_download_url')" >> $GITHUB_ENV
-          echo "partitions_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "partitions").archive_download_url')" >> $GITHUB_ENV
-          echo "bootloader_url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | select(.name == "bootloader").archive_download_url')" >> $GITHUB_ENV
+          # 아티팩트 URL을 저장할 본문 변수 초기화
+          body="Firmware for this pull request:\n"
+          
+          # 아티팩트 목록 가져오기
+          artifacts=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq '.artifacts[] | .name')
+          
+          # 아티팩트 이름과 URL을 매칭하여 본문 생성
+          for artifact_name in $artifacts; do
+            url=$(gh run view ${{ github.event.workflow_run.id }} --json artifacts --jq ".artifacts[] | select(.name == \"$artifact_name\").archive_download_url")
+            if [ ! -z "$url" ]; then
+              body+="- [$artifact_name]($url)\n"
+            fi
+          done
+          
+          # 생성된 본문을 환경 변수에 저장
+          echo "body=$body" >> $GITHUB_ENV
 
       - name: Add comment to Pull Request
         uses: actions/github-script@v6
@@ -23,12 +37,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const issue_number = context.payload.workflow_run.pull_requests[0].number;
-            const body = `
-              Firmware for this pull request:
-              - [Firmware](${{ env.firmware_url }})
-              - [Partitions](${{ env.partitions_url }})
-              - [Bootloader](${{ env.bootloader_url }})
-            `;
+            const body = process.env.body; // 환경 변수에서 본문 가져오기
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
