@@ -47,7 +47,11 @@ jobs:
       - name: Rename bin files
         run: |
           echo "Renaming bin files with the environment name"
-          find .pio/build/*/*.bin -exec rename 's:/:-:g' {} \;
+          find .pio/build/*/*.bin -print -exec rename 's:/:-:g' {} \;
+          ls -l
+        #  echo "Renaming bin files with the environment name"
+        #  find .pio/build/*/*.bin -exec rename 's:/:-:g' {} \;
+        #  ls -l
 
       - name: Create toDeploy directory
         run: mkdir toDeploy
